@@ -2,19 +2,25 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/rabbit
-        http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd">
+        http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd ">
+
+    <context:property-placeholder location="classpath:/mq.properties" ignore-unresolvable="true"/>
+
 
     <!-- 连接服务配置  -->
-    <rabbit:connection-factory id="mqConnectionFactory" host="10.0.13.46" username="bbtree" password="bbtree@123" port="5672"/>
-
+    <rabbit:connection-factory id="mqConnectionFactory" host="${mq.host}" username="${mq.username}"
+                               password="${mq.password}" port="${mq.port}"/>
     <rabbit:admin connection-factory="mqConnectionFactory"/>
 
-    <rabbit:template id="amqpTemplate" connection-factory="mqConnectionFactory" exchange="my-mq-exchange"/>
-
+    <!--客户端-->
+    <rabbit:template id="amqpTemplate" connection-factory="mqConnectionFactory"/>
 
     <!-- 配置线程池 -->
     <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
@@ -29,21 +35,36 @@
     </bean>
 
     <!-- queue 队列声明-->
-    <rabbit:queue id="queue_one" name="queue_one" durable="true" auto-delete="false" exclusive="false"/>
+    <rabbit:queue id="queue_queues" name="queue_one" durable="true" auto-delete="false" exclusive="false"/>
+    <rabbit:queue id="queue_info" name="queue_info" durable="true" auto-delete="false" exclusive="false"/>
+    <rabbit:queue id="queue_warn" name="queue_warn" durable="true" auto-delete="false" exclusive="false"/>
 
     <!-- exchange queue binging key 绑定 -->
-    <rabbit:direct-exchange name="my-mq-exchange" id="my-mq-exchange" durable="true" auto-delete="false">
+    <rabbit:direct-exchange name="direct-exchange" id="direct-exchange" durable="true" auto-delete="false">
         <rabbit:bindings>
             <rabbit:binding queue="queue_one" key="queue_one_key"/>
         </rabbit:bindings>
     </rabbit:direct-exchange>
 
-    <!-- 消息监听器 -->
-    <bean id="consumerMessageListener" class="com.bbtree.mq.consumer.TestinfoMessageListener"/>
 
-    <!-- queue litener  观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象-->
+    <!-- exchange topic binging key 绑定 -->
+    <rabbit:topic-exchange name="topic-exchange" id="topic-exchange" durable="true" auto-delete="false">
+        <rabbit:bindings>
+            <rabbit:binding queue="queue_info" pattern="*.info.*"/>
+            <rabbit:binding queue="queue_warn" pattern="*.warn.*"/>
+        </rabbit:bindings>
+    </rabbit:topic-exchange>
+
+
+    <!-- 消息监听器 -->
+    <bean id="infoMessageListener" class="com.bbtree.mq.consumer.InfoMessageListener"/>
+    <bean id="warnMessageListener" class="com.bbtree.mq.consumer.WarnMessageListener"/>
+    <bean id="queuMessageListener" class="com.bbtree.mq.consumer.QueuMessageListener"/>
+
     <rabbit:listener-container connection-factory="mqConnectionFactory" acknowledge="auto" task-executor="taskExecutor">
-        <rabbit:listener queues="queue_one" ref="consumerMessageListener"/>
+        <rabbit:listener queues="queue_info" ref="infoMessageListener"/>
+        <rabbit:listener queues="queue_warn" ref="warnMessageListener"/>
+        <rabbit:listener queues="queue_queues" ref="queuMessageListener"/>
     </rabbit:listener-container>
 
 </beans>
