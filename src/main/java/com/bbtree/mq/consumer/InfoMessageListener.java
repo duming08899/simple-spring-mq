@@ -14,7 +14,10 @@ public class InfoMessageListener implements MessageListener {
             receiveMsg = new String(message.getBody(), "utf-8");
         } catch (Exception e1) {
             e1.printStackTrace();
+        }finally {
+
         }
+
         System.out.println("info - receiver -" + receiveMsg + "-" + message.getMessageProperties().getMessageId());
     }
 }

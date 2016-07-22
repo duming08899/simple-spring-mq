@@ -15,7 +15,7 @@ public class QueuInfoProducer {
     public static void main(String[] args) {
         ApplicationContext ap = new ClassPathXmlApplicationContext("applicationContext.xml");
         AmqpTemplate amqpTemplate = ap.getBean("amqpTemplate", RabbitOperations.class);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             amqpTemplate.convertAndSend("direct-exchange", "queue_one_key", "message " + i);
             amqpTemplate.convertAndSend("topic-exchange", "tomcat.info.*", "message " + i);
             amqpTemplate.convertAndSend("topic-exchange", "tomcat.warn.*", "message " + i);
