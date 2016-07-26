@@ -1,4 +1,4 @@
-package com.bbtree.mq.consumer;
+package com.bbtree.srpingmq.consumer;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;

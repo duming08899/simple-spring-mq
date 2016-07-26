@@ -57,9 +57,9 @@
 
 
     <!-- 消息监听器 -->
-    <bean id="infoMessageListener" class="com.bbtree.mq.consumer.InfoMessageListener"/>
-    <bean id="warnMessageListener" class="com.bbtree.mq.consumer.WarnMessageListener"/>
-    <bean id="queuMessageListener" class="com.bbtree.mq.consumer.QueuMessageListener"/>
+    <bean id="infoMessageListener" class="com.bbtree.srpingmq.consumer.InfoMessageListener"/>
+    <bean id="warnMessageListener" class="com.bbtree.srpingmq.consumer.WarnMessageListener"/>
+    <bean id="queuMessageListener" class="com.bbtree.srpingmq.consumer.QueuMessageListener"/>
 
     <rabbit:listener-container connection-factory="mqConnectionFactory" acknowledge="auto" task-executor="taskExecutor">
         <rabbit:listener queues="queue_info" ref="infoMessageListener"/>
